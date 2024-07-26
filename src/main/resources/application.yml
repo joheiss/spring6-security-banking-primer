@@ -1,10 +1,10 @@
 spring:
   application:
     name: primer
-  security:
-    user:
-      name: ${SECURITY_USERNAME:jovisco}
-      password: ${SECURITY_PASSWORD:12345}
+  # security:
+  #   user:
+  #     name: ${SECURITY_USERNAME:jovisco}
+  #     password: ${SECURITY_PASSWORD:12345}
       
 logging:
   level:
