@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jovisco.springsecurity.primer.entities.Customer;
 import com.jovisco.springsecurity.primer.repositories.CustomerRepository;
+import com.jovisco.springsecurity.primer.services.RegistrationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,17 +19,15 @@ public class UserController {
 
 private final CustomerRepository customerRepository;
 
-    private final PasswordEncoder passwordEncoder;
+    private final RegistrationService registrationService;
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody Customer customer) {
-        
-        try {
-                var hashPwd = passwordEncoder.encode(customer.getPwd());
-                customer.setPwd(hashPwd);
-                var savedCustomer = customerRepository.save(customer);
 
-                if(savedCustomer.getId() > 0) {
+        try {
+                var savedCustomer = registrationService.registerUser(customer);
+
+                if (savedCustomer.getId() > 0) {
                     return ResponseEntity
                         .status(HttpStatus.CREATED)
                         .body("Given user details are successfully registered");

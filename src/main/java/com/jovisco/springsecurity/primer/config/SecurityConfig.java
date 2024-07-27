@@ -19,9 +19,11 @@ public class SecurityConfig {
   @Order(SecurityProperties.BASIC_AUTH_ORDER)
   SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
-    httpSecurity.authorizeHttpRequests((requests) -> requests
-        .requestMatchers("/contact", "/notices", "/welcome", "/register", "/error").permitAll()
-        .anyRequest().authenticated());
+    httpSecurity
+      .csrf(csrfConfig -> csrfConfig.disable())
+      .authorizeHttpRequests((requests) -> requests
+      .requestMatchers("/contact", "/notices", "/welcome", "/register", "/error").permitAll()
+      .anyRequest().authenticated());
 
     // httpSecurity.formLogin(config -> config.disable());
     httpSecurity.formLogin(Customizer.withDefaults());
