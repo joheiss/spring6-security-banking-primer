@@ -1,0 +1,16 @@
+services:
+
+ usersdb:
+  container_name: usersdb
+  image: mysql
+  restart: always
+  ports:
+    - "3306:3306"  
+  environment:
+    MYSQL_ROOT_PASSWORD: "root"  
+    MYSQL_DATABASE: "myusersdb"
+  volumes:
+    - mysqlusers:/var/lib/mysqlusers
+
+volumes:
+  mysqlusers:

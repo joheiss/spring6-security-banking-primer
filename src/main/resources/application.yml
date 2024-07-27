@@ -5,7 +5,16 @@ spring:
   #   user:
   #     name: ${SECURITY_USERNAME:jovisco}
   #     password: ${SECURITY_PASSWORD:12345}
-      
+  datasource:
+    url: "jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/${DATABASE_NAME:myusersdb}"
+    username: ${DATABASE_USERNAME:root}
+    password: ${DATABASE_PASSWORD:root}
+  jpa:
+    show-sql: ${JPA_SHOW_SQL:true}
+    # properties:
+    #   hibernate:
+    #     '[format_sql]': ${HIBERNATE_FORMAT_SQL:true}
+
 logging:
   level:
     org:
