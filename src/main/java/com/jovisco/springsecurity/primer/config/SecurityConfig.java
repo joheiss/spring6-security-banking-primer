@@ -7,12 +7,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 
@@ -24,7 +20,7 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
     httpSecurity.authorizeHttpRequests((requests) -> requests
-        .requestMatchers("/contact", "/notices", "/welcome", "/error").permitAll()
+        .requestMatchers("/contact", "/notices", "/welcome", "/register", "/error").permitAll()
         .anyRequest().authenticated());
 
     // httpSecurity.formLogin(config -> config.disable());
@@ -34,20 +30,25 @@ public class SecurityConfig {
     return httpSecurity.build();
   }
 
+  /* -- REPLACED by xxxUserDetailsService ---
+
   @Bean
-  UserDetailsService userDetailsService() {
-    UserDetails user = User.withUsername("user")
-        .password("{bcrypt}$2a$12$9CVTmglu7SXoLhXTRv1Dv.26fo0ZVbtF2tkviEZtzk1pFo//Qc.3u")
-        .authorities("read")
-        .build();
+  UserDetailsService userDetailsService(DataSource dataSource) {
+    // UserDetails user = User.withUsername("user")
+    //     .password("{bcrypt}$2a$12$9CVTmglu7SXoLhXTRv1Dv.26fo0ZVbtF2tkviEZtzk1pFo//Qc.3u")
+    //     .authorities("read")
+    //     .build();
 
-    UserDetails admin = User.withUsername("admin")
-        .password("{bcrypt$2a$12$kfg0mphXmIGS3.fmbWqA5OSGUNokElSVkSJzhZWX/HNTxxpjclllS")
-        .authorities("admin")
-        .build();
+    // UserDetails admin = User.withUsername("admin")
+    //     .password("{bcrypt$2a$12$kfg0mphXmIGS3.fmbWqA5OSGUNokElSVkSJzhZWX/HNTxxpjclllS")
+    //     .authorities("admin")
+    //     .build();
 
-    return new InMemoryUserDetailsManager(user, admin);
+    // return new InMemoryUserDetailsManager(user, admin);
+    return new JdbcUserDetailsManager(dataSource);
   }
+
+  -- */
 
   @Bean
   PasswordEncoder passwordEncoder() {

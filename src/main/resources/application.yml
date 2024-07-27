@@ -11,15 +11,18 @@ spring:
     password: ${DATABASE_PASSWORD:root}
   jpa:
     show-sql: ${JPA_SHOW_SQL:true}
-    # properties:
-    #   hibernate:
-    #     '[format_sql]': ${HIBERNATE_FORMAT_SQL:true}
+    properties:
+      hibernate:
+        '[format_sql]': ${HIBERNATE_FORMAT_SQL:true}
 
 logging:
   level:
     org:
       springframework:
         security: ${SPRING_SECURITY_LOG_LEVEL:TRACE}
+    com:
+      jovisco: 
+        springsecurity: ${SPRING_SECURITY_LOG_LEVEL:TRACE}
   pattern:
     console: ${LOGPATTERN_CONSOLE:%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread])
       %yellow(%logger{15}) - %msg%n}
