@@ -2,13 +2,11 @@ package com.jovisco.springsecurity.primer.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jovisco.springsecurity.primer.entities.Customer;
-import com.jovisco.springsecurity.primer.repositories.CustomerRepository;
+import com.jovisco.springsecurity.primer.dtos.CustomerCreateDto;
 import com.jovisco.springsecurity.primer.services.RegistrationService;
 
 import lombok.RequiredArgsConstructor;
@@ -17,15 +15,13 @@ import lombok.RequiredArgsConstructor;
 @RestController
 public class UserController {
 
-private final CustomerRepository customerRepository;
-
     private final RegistrationService registrationService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody Customer customer) {
+    public ResponseEntity<String> registerUser(@RequestBody CustomerCreateDto customerDto) {
 
         try {
-                var savedCustomer = registrationService.registerUser(customer);
+                var savedCustomer = registrationService.registerUser(customerDto);
 
                 if (savedCustomer.getId() > 0) {
                     return ResponseEntity
