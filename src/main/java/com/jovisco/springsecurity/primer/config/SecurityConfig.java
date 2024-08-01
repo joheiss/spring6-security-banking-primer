@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 
+import com.jovisco.springsecurity.primer.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+
 @Configuration
 @Profile("!prod")
 public class SecurityConfig {
@@ -22,15 +24,16 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
     httpSecurity
+        .sessionManagement(config -> config.invalidSessionUrl("/invalidSession"))
         .requiresChannel(config -> config.anyRequest().requiresInsecure()) // only HTTP
         .csrf(csrfConfig -> csrfConfig.disable())
         .authorizeHttpRequests((requests) -> requests
-            .requestMatchers("/contact", "/notices", "/welcome", "/register", "/error").permitAll()
+            .requestMatchers("/contact", "/notices", "/welcome", "/register", "/error", "/invalidSession").permitAll()
             .anyRequest().authenticated());
 
     // httpSecurity.formLogin(config -> config.disable());
     httpSecurity.formLogin(Customizer.withDefaults());
-    httpSecurity.httpBasic(Customizer.withDefaults());
+    httpSecurity.httpBasic(config -> config.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
 
     return httpSecurity.build();
   }

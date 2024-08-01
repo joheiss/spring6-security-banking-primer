@@ -1,5 +1,8 @@
 server:
   port: 8443
+  servlet:
+    session:
+      timeout: ${SESSION_TIMEOUT:10m}
 spring:
   application:
     name: primer

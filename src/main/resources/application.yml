@@ -1,5 +1,8 @@
 server:
   port: 7070
+  servlet:
+    session:
+      timeout: ${SESSION_TIMEOUT:60m}
 spring:
   application:
     name: primer
