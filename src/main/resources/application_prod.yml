@@ -1,12 +1,12 @@
 server:
-  port: 7070
+  port: 8443
 spring:
   application:
     name: primer
   config:
-    import: application_prod.yml
-  profiles:
-    active: default
+    activate:
+      on-profile:
+      - prod
   # security:
   #   user:
   #     name: ${SECURITY_USERNAME:jovisco}
@@ -16,19 +16,19 @@ spring:
     username: ${DATABASE_USERNAME:root}
     password: ${DATABASE_PASSWORD:root}
   jpa:
-    show-sql: ${JPA_SHOW_SQL:true}
+    show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        '[format_sql]': ${HIBERNATE_FORMAT_SQL:true}
+        '[format_sql]': ${HIBERNATE_FORMAT_SQL:false}
 
 logging:
   level:
     org:
       springframework:
-        security: ${SPRING_SECURITY_LOG_LEVEL:TRACE}
+        security: ${SPRING_SECURITY_LOG_LEVEL:WARN}
     com:
       jovisco: 
-        springsecurity: ${SPRING_SECURITY_LOG_LEVEL:TRACE}
+        springsecurity: ${SPRING_SECURITY_LOG_LEVEL:WARN}
   pattern:
     console: ${LOGPATTERN_CONSOLE:%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread])
       %yellow(%logger{15}) - %msg%n}

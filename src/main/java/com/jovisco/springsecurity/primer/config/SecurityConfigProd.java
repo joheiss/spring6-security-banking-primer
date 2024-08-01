@@ -14,15 +14,15 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 
 @Configuration
-@Profile("!prod")
-public class SecurityConfig {
+@Profile("prod")
+public class SecurityConfigProd {
 
   @Bean
   @Order(SecurityProperties.BASIC_AUTH_ORDER)
   SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
     httpSecurity
-        .requiresChannel(config -> config.anyRequest().requiresInsecure()) // only HTTP
+        .requiresChannel(config -> config.anyRequest().requiresSecure()) // only HTTPS
         .csrf(csrfConfig -> csrfConfig.disable())
         .authorizeHttpRequests((requests) -> requests
             .requestMatchers("/contact", "/notices", "/welcome", "/register", "/error").permitAll()
