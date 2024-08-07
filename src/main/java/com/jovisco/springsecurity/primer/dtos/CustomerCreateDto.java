@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 public class CustomerCreateDto {
 
+    private String name;
     private String email;
+    private String mobileNumber;
     private String pwd;
     private String role;
 }

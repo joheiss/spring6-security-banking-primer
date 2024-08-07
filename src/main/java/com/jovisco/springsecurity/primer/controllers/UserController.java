@@ -1,12 +1,19 @@
 package com.jovisco.springsecurity.primer.controllers;
 
 import org.springframework.http.HttpStatus;
+
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovisco.springsecurity.primer.dtos.CustomerCreateDto;
+import com.jovisco.springsecurity.primer.entities.Customer;
+import com.jovisco.springsecurity.primer.repositories.CustomerRepository;
 import com.jovisco.springsecurity.primer.services.RegistrationService;
 
 import lombok.RequiredArgsConstructor;
@@ -16,26 +23,30 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final RegistrationService registrationService;
+    private final CustomerRepository customerRepository;
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody CustomerCreateDto customerDto) {
 
         try {
-                var savedCustomer = registrationService.registerUser(customerDto);
-
-                if (savedCustomer.getId() > 0) {
-                    return ResponseEntity
-                        .status(HttpStatus.CREATED)
-                        .body("Given user details are successfully registered");
-                } else {
-                    return ResponseEntity
-                        .status(HttpStatus.BAD_REQUEST)
-                        .body("User registration failed");
-                }
+            var savedCustomer = registrationService.registerUser(customerDto);
+            return (savedCustomer.getId() > 0)
+                    ? ResponseEntity
+                            .status(HttpStatus.CREATED)
+                            .body("Given user details are successfully registered")
+                    : ResponseEntity
+                            .status(HttpStatus.BAD_REQUEST)
+                            .body("User registration failed");
         } catch (Exception ex) {
             return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("An exception occurred: " + ex.getMessage());
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An exception occurred: " + ex.getMessage());
         }
+    }
+
+    @RequestMapping("/user")
+    public Customer getUserDetailsAfterLogin(Authentication authentication) {
+        Optional<Customer> optionalCustomer = customerRepository.findByEmail(authentication.getName());
+        return optionalCustomer.orElse(null);
     }
 }

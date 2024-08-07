@@ -1,6 +1,7 @@
 package com.jovisco.springsecurity.primer.services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,11 +28,13 @@ public class JoviscoUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.trace("load username: " + username);
         Customer customer = customerRepository
-            .findByEmail(username)
-            .orElseThrow(() -> new
-                UsernameNotFoundException("User details not found for the user: " + username)
-            );
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(customer.getRole()));
+                .findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User details not found for the user: " + username));
+        List<GrantedAuthority> authorities = customer.getAuthorities()
+                .stream()
+                .map(authority -> new SimpleGrantedAuthority(authority.getName())).collect(Collectors.toList());
         return new User(customer.getEmail(), customer.getPwd(), authorities);
+        // List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(customer.getRole()));
+
     }
 }

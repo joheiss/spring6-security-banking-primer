@@ -20,10 +20,13 @@ public class RegistrationServiceImpl implements RegistrationService {
     public Customer registerUser(CustomerCreateDto customerDto) {
 
         var customer = new Customer();
+        customer.setName(customerDto.getName());
         customer.setEmail(customerDto.getEmail());
+        customer.setMobileNumber(customerDto.getMobileNumber());
         customer.setRole(customerDto.getRole());
         var hashPwd = passwordEncoder.encode(customerDto.getPwd());
         customer.setPwd(hashPwd);
+        customer.setCreateDt(new java.sql.Date(System.currentTimeMillis()));
         var savedCustomer = customerRepository.save(customer);
 
         return savedCustomer;
