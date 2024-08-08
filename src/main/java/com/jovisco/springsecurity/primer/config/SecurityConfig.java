@@ -22,7 +22,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.jovisco.springsecurity.primer.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import com.jovisco.springsecurity.primer.filters.AuthoritiesLoggingAfterFilter;
 import com.jovisco.springsecurity.primer.filters.CsrfCookieFilter;
+import com.jovisco.springsecurity.primer.filters.RequestValidationBeforeFilter;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.var;
@@ -56,6 +58,8 @@ public class SecurityConfig {
             return config;
           }
         }))
+        .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+        .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
         // .csrf(csrfConfig -> csrfConfig.disable())
         .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
             .ignoringRequestMatchers("/contact", "/register")
