@@ -1,5 +1,6 @@
 package com.jovisco.springsecurity.primer.config;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
@@ -7,10 +8,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -24,6 +28,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import com.jovisco.springsecurity.primer.exceptionhandling.CustomBasicAuthenticationEntryPoint;
 import com.jovisco.springsecurity.primer.filters.AuthoritiesLoggingAfterFilter;
 import com.jovisco.springsecurity.primer.filters.CsrfCookieFilter;
+import com.jovisco.springsecurity.primer.filters.JWTTokenGeneratorFilter;
+import com.jovisco.springsecurity.primer.filters.JWTTokenValidatorFilter;
 import com.jovisco.springsecurity.primer.filters.RequestValidationBeforeFilter;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,11 +46,13 @@ public class SecurityConfig {
     var csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
 
     httpSecurity
-        .securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
+        // -- changes for JWT
+        // .securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
+        // .sessionManagement(config -> config
+        // .invalidSessionUrl(
+        // "/invalidSession"))
         .sessionManagement(config -> config
-            .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-            .invalidSessionUrl(
-                "/invalidSession"))
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .requiresChannel(config -> config.anyRequest().requiresInsecure()) // only HTTP
         .cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
           @Override
@@ -54,6 +62,7 @@ public class SecurityConfig {
             config.setAllowedMethods(Collections.singletonList("*"));
             config.setAllowCredentials(true);
             config.setAllowedHeaders(Collections.singletonList("*"));
+            config.setExposedHeaders(Arrays.asList("Authorization"));
             config.setMaxAge(3600L);
             return config;
           }
@@ -62,11 +71,14 @@ public class SecurityConfig {
         .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
         // .csrf(csrfConfig -> csrfConfig.disable())
         .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-            .ignoringRequestMatchers("/contact", "/register")
+            .ignoringRequestMatchers("/contact", "/register", "/apiLogin")
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+        .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
+        .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
         .authorizeHttpRequests((requests) -> requests
-            .requestMatchers("/contact", "/notices", "/welcome", "/register", "/error", "/invalidSession").permitAll()
+            .requestMatchers("/contact", "/notices", "/welcome", "/register", "/apiLogin", "/error", "/invalidSession")
+            .permitAll()
             // .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
             // .requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
             // .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
@@ -114,5 +126,15 @@ public class SecurityConfig {
   @Bean
   CompromisedPasswordChecker compromisedPasswordChecker() {
     return new HaveIBeenPwnedRestApiPasswordChecker();
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
+      PasswordEncoder passwordEncoder) {
+    var authenticationProvider = new JoviscoUsernamePwdAuthenticationProvider(
+        userDetailsService, passwordEncoder);
+    ProviderManager providerManager = new ProviderManager(authenticationProvider);
+    providerManager.setEraseCredentialsAfterAuthentication(false);
+    return providerManager;
   }
 }

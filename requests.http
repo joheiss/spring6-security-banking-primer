@@ -1,0 +1,6 @@
+POST http://localhost:7070/apiLogin
+
+{
+  "username": "happy@example.com",
+  "password": "streng@geheim"
+}
