@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,7 @@ import com.jovisco.springsecurity.primer.exceptionhandling.CustomBasicAuthentica
 
 import jakarta.servlet.http.HttpServletRequest;
 
+@EnableMethodSecurity
 @Configuration
 @Profile("prod")
 public class SecurityConfigProd {

@@ -24,6 +24,7 @@ public class JoviscoUserDetailsService implements UserDetailsService {
 
     private final CustomerRepository customerRepository;
 
+    // @PreAuthorize("#username == authentication.principal.username")
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.trace("load username: " + username);

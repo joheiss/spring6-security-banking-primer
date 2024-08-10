@@ -1,34 +1,32 @@
 package com.jovisco.springsecurity.primer.controllers;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jovisco.springsecurity.primer.entities.Contact;
-import com.jovisco.springsecurity.primer.repositories.ContactRepository;
+import com.jovisco.springsecurity.primer.dtos.ContactRequestDto;
+import com.jovisco.springsecurity.primer.dtos.ContactResponseDto;
+import com.jovisco.springsecurity.primer.services.ContactService;
 
 import lombok.RequiredArgsConstructor;
 
-import java.sql.Date;
-import java.util.Random;
+import java.util.List;
 
 @RequiredArgsConstructor
-
 @RestController
 public class ContactController {
 
-  private final ContactRepository contactRepository;
+  private final ContactService contactService;
 
-  @PostMapping("/contact")
-  public Contact saveContactInquiryDetails(@RequestBody Contact contact) {
-    contact.setContactId(getServiceReqNumber());
-    contact.setCreateDt(new Date(System.currentTimeMillis()));
-    return contactRepository.save(contact);
+  @GetMapping("/contact")
+  public List<ContactResponseDto> listContacts() {
+    return contactService.listContacts();
   }
 
-  public String getServiceReqNumber() {
-    Random random = new Random();
-    int ranNum = random.nextInt(999999999 - 9999) + 9999;
-    return "SR" + ranNum;
+  @PostMapping("/contact")
+  public List<ContactResponseDto> saveContactInquiryDetails(@RequestBody List<ContactRequestDto> contactRequestDtos) {
+
+    return contactService.saveContacts(contactRequestDtos);
   }
 }

@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -35,6 +36,7 @@ import com.jovisco.springsecurity.primer.filters.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.var;
 
+@EnableMethodSecurity
 @Configuration
 @Profile("!prod")
 public class SecurityConfig {
@@ -85,7 +87,8 @@ public class SecurityConfig {
             // .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
             .requestMatchers("/myAccount").hasRole("USER")
             .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
-            .requestMatchers("/myLoans").hasRole("USER")
+            // .requestMatchers("/myLoans").hasRole("USER")
+            .requestMatchers("/myLoans").authenticated()
             .requestMatchers("/myCards").hasRole("USER")
             .anyRequest().authenticated());
 
