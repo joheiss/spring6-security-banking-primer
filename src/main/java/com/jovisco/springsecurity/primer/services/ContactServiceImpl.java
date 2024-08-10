@@ -28,7 +28,7 @@ public class ContactServiceImpl implements ContactService {
   @PreFilter("filterObject.contactName != 'Test'")
   public List<ContactResponseDto> saveContacts(List<ContactRequestDto> contacts) {
 
-    List<ContactResponseDto> savedContacts = new ArrayList<ContactResponseDto>();
+    List<ContactResponseDto> savedContacts = new ArrayList<>();
 
     log.debug("Contact to be saved: {}", contacts);
 
@@ -42,14 +42,10 @@ public class ContactServiceImpl implements ContactService {
             return contact;
           })
           .toList();
-
       var saved = contactRepository.saveAll(toBeSaved);
-      List<Contact> savedList = new ArrayList<Contact>();
-      saved.forEach(savedList::add);
-      savedContacts = savedList.stream()
-          .map(ContactMapper::entityToResponseDto)
-          .toList();
+      saved.iterator().forEachRemaining(contact -> savedContacts.add(ContactMapper.entityToResponseDto(contact)));
     }
+
     return savedContacts;
   }
 
@@ -63,9 +59,7 @@ public class ContactServiceImpl implements ContactService {
   public List<ContactResponseDto> listContacts() {
     List<ContactResponseDto> list = new ArrayList<>();
     var contacts = contactRepository.findAll();
-    for (Contact contact : contacts) {
-      list.add(ContactMapper.entityToResponseDto(contact));
-    }
+    contacts.iterator().forEachRemaining(contact -> list.add(ContactMapper.entityToResponseDto(contact)));
     return list;
   }
 
