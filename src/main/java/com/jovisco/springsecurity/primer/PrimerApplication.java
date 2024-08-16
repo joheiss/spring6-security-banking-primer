@@ -6,7 +6,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 
 @SpringBootApplication
 // @EnableWebSecurity(debug = true)
-@EnableMethodSecurity
+@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class PrimerApplication {
 
 	public static void main(String[] args) {

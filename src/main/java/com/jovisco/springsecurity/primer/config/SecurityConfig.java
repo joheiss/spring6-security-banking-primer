@@ -8,30 +8,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.password.CompromisedPasswordChecker;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import com.jovisco.springsecurity.primer.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.jovisco.springsecurity.primer.filters.AuthoritiesLoggingAfterFilter;
 import com.jovisco.springsecurity.primer.filters.CsrfCookieFilter;
-import com.jovisco.springsecurity.primer.filters.JWTTokenGeneratorFilter;
-import com.jovisco.springsecurity.primer.filters.JWTTokenValidatorFilter;
-import com.jovisco.springsecurity.primer.filters.RequestValidationBeforeFilter;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.var;
@@ -45,14 +33,12 @@ public class SecurityConfig {
   @Order(SecurityProperties.BASIC_AUTH_ORDER)
   SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
+    var jwtAuthenticationConverter = new JwtAuthenticationConverter();
+    jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
+
     var csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
 
     httpSecurity
-        // -- changes for JWT
-        // .securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
-        // .sessionManagement(config -> config
-        // .invalidSessionUrl(
-        // "/invalidSession"))
         .sessionManagement(config -> config
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .requiresChannel(config -> config.anyRequest().requiresInsecure()) // only HTTP
@@ -69,75 +55,23 @@ public class SecurityConfig {
             return config;
           }
         }))
-        .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
-        .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
-        // .csrf(csrfConfig -> csrfConfig.disable())
         .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-            .ignoringRequestMatchers("/contact", "/register", "/apiLogin")
+            .ignoringRequestMatchers("/contact", "/register")
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-        .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
-        .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
         .authorizeHttpRequests((requests) -> requests
-            .requestMatchers("/contact", "/notices", "/welcome", "/register", "/apiLogin", "/error", "/invalidSession")
+            .requestMatchers("/contact", "/notices", "/error", "/invalidSession")
             .permitAll()
-            // .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
-            // .requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
-            // .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
-            // .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
             .requestMatchers("/myAccount").hasRole("USER")
             .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
-            // .requestMatchers("/myLoans").hasRole("USER")
             .requestMatchers("/myLoans").authenticated()
             .requestMatchers("/myCards").hasRole("USER")
+            .requestMatchers("/user").authenticated()
             .anyRequest().authenticated());
 
-    // httpSecurity.formLogin(config -> config.disable());
-    httpSecurity.formLogin(Customizer.withDefaults());
-    httpSecurity.httpBasic(config -> config.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+    httpSecurity.oauth2ResourceServer(
+        config -> config.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
 
     return httpSecurity.build();
-  }
-
-  /*
-   * -- REPLACED by xxxUserDetailsService ---
-   * 
-   * @Bean
-   * UserDetailsService userDetailsService(DataSource dataSource) {
-   * // UserDetails user = User.withUsername("user")
-   * // .password("{bcrypt}$2a$12$9CVTmglu7SXoLhXTRv1Dv.26fo0ZVbtF2tkviEZtzk1pFo//Qc.3u")
-   * // .authorities("read")
-   * // .build();
-   * 
-   * // UserDetails admin = User.withUsername("admin")
-   * // .password("{bcrypt$2a$12$kfg0mphXmIGS3.fmbWqA5OSGUNokElSVkSJzhZWX/HNTxxpjclllS")
-   * // .authorities("admin")
-   * // .build();
-   * 
-   * // return new InMemoryUserDetailsManager(user, admin);
-   * return new JdbcUserDetailsManager(dataSource);
-   * }
-   * 
-   * --
-   */
-
-  @Bean
-  PasswordEncoder passwordEncoder() {
-    return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-  }
-
-  @Bean
-  CompromisedPasswordChecker compromisedPasswordChecker() {
-    return new HaveIBeenPwnedRestApiPasswordChecker();
-  }
-
-  @Bean
-  public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
-      PasswordEncoder passwordEncoder) {
-    var authenticationProvider = new JoviscoUsernamePwdAuthenticationProvider(
-        userDetailsService, passwordEncoder);
-    ProviderManager providerManager = new ProviderManager(authenticationProvider);
-    providerManager.setEraseCredentialsAfterAuthentication(false);
-    return providerManager;
   }
 }
