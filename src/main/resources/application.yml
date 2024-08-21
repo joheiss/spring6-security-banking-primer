@@ -15,6 +15,10 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: ${JWK_SET_URI:http://localhost:8080/realms/jovisco-dev/protocol/openid-connect/certs}
+        # opaque:
+        #   introspection-uri: ${INTROSPECT_URI:http://localhost:8080/realms/jovisco-dev/protocol/openid-connect/token/introspect}
+        #   introspection-client-id: ${INTROSPECT_ID:weissichnicht}
+        #   introspection-client-secret: ${INTROSPECT_SECRET:sagichnicht}
   datasource:
     url: "jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/${DATABASE_NAME:myusersdb}"
     username: ${DATABASE_USERNAME:root}

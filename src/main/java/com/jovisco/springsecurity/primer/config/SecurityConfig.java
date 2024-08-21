@@ -29,6 +29,17 @@ import lombok.var;
 @Profile("!prod")
 public class SecurityConfig {
 
+  /*
+   * @Value("${spring.security.oauth2.resourceserver.opaque.introspection-uri}")
+   * String introspectionUri;
+   * 
+   * @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-id}")
+   * String clientId;
+   * 
+   * @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-secret}")
+   * String clientSecret;
+   */
+
   @Bean
   @Order(SecurityProperties.BASIC_AUTH_ORDER)
   SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -71,6 +82,11 @@ public class SecurityConfig {
 
     httpSecurity.oauth2ResourceServer(
         config -> config.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+
+    // httpSecurity.oauth2ResourceServer(
+    // rsc -> rsc.opaqueToken(otc -> otc.authenticationConverter(new KeycloakOpaqueRoleConverter())
+    // .introspectionUri(this.introspectionUri)
+    // .introspectionClientCredentials(this.clientId, this.clientSecret)));
 
     return httpSecurity.build();
   }
